@@ -3,8 +3,8 @@ package com.followermaze.server
 import java.io.{BufferedReader, InputStreamReader}
 import java.net.ServerSocket
 
-import com.followermaze.entity.Client
-import com.followermaze.repository.EventSubscriberRepository
+import com.followermaze.entity.Subscriber
+import com.followermaze.repository.SubscriberRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,9 +16,9 @@ class ClientSocketServer(port: Int)(implicit ex: ExecutionContext)
       val socket = serverSocket.accept()
       val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
       val clientId = in.readLine().toInt
-      val client = Client(clientId, socket.getOutputStream)
-      Future(client)
-      EventSubscriberRepository.subscribe(clientId, client)
+      val subscriber = new Subscriber(clientId, socket.getOutputStream)
+//      Future(subscriber.poll())
+      SubscriberRepository.subscribe(clientId, subscriber)
     }
   }
 

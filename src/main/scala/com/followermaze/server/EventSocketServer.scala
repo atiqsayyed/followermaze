@@ -1,17 +1,28 @@
 package com.followermaze.server
 
-import java.io.{BufferedReader, InputStreamReader}
 import java.net.ServerSocket
 
-import scala.concurrent.{ExecutionContext, Future}
+import com.followermaze.publisher.EventPublisher
 
-class EventSocketServer(port: Int)(implicit ex: ExecutionContext) extends SocketServer {
+import scala.concurrent.{ExecutionContext, Future}
+import scala.io.BufferedSource
+
+class EventSocketServer(port: Int, eventPublisher: EventPublisher)(
+    implicit ex: ExecutionContext)
+    extends SocketServer {
   val serverSocket = new ServerSocket(port)
+
   override def start: Unit = Future {
     val socket = serverSocket.accept()
-    val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
-    in.readLine()
+    val in = socket.getInputStream
+    val eventMessages = new BufferedSource(in).getLines()
+    eventMessages.foreach(message => {
+      eventPublisher.handleEvent(message)
+    })
   }
 
-  override def shutdown: Unit = ???
+  override def shutdown: Unit = {
+    serverSocket.close()
+    eventPublisher.shutdown
+  }
 }
