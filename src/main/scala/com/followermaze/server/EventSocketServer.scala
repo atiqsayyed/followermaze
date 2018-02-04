@@ -17,7 +17,7 @@ class EventSocketServer(port: Int, eventPublisher: EventPublisher)(
     val in = socket.getInputStream
     val eventMessages = new BufferedSource(in).getLines()
     eventMessages.foreach(message => {
-      eventPublisher.handleEvent(message)
+      eventPublisher.publish(message)
     })
   }
 

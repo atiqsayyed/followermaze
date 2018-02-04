@@ -7,58 +7,59 @@ import com.followermaze.repository.{FollowerRepository, SubscriberRepository}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
-import scala.concurrent.ExecutionContext
 
-class EventPublisher() {
+class EventPublisher {
   private var nextSeq: Int = 1
   private val eventQueue: mutable.PriorityQueue[Event] =
     mutable.PriorityQueue()(Event.orderedBySeq.reverse)
-  val incomingEventQueue = new LinkedBlockingQueue[Event]()
+  private val incomingEventQueue = new LinkedBlockingQueue[Event]()
 
-  def handleEvent(inputMessage: String)(implicit ex: ExecutionContext) = {
+  def publish(inputMessage: String) = {
     Event(inputMessage).map(event => {
       incomingEventQueue.add(event)
     })
   }
 
-  private def publish(event: Event) = {
+  @tailrec
+  final def startPublishing(): Unit = {
+    val event = incomingEventQueue.take()
+    distributeEvent(event)
+    startPublishing()
+  }
+
+  private def distributeEvent(event: Event) = {
     eventQueue += event
-    while (eventQueue.nonEmpty && eventQueue.head.sequenceNo <= nextSeq) {
+    while (hasNext) {
       val orderedEvent = eventQueue.dequeue()
-      println(s"dequeue: $orderedEvent")
       if (orderedEvent.sequenceNo == nextSeq) nextSeq += 1
       orderedEvent match {
         case Follow(_, from, to) => {
           FollowerRepository.addFollower(to, from)
-          send(to, orderedEvent)
+          notifySubscriber(to, orderedEvent)
         }
         case Unfollow(_, from, to) =>
           FollowerRepository.removeFollower(to, from)
-        case Broadcast(sequenceNo) => send(orderedEvent)
-        case Private(_, from, to) => send(to, orderedEvent)
+        case Broadcast(sequenceNo) => notifyAll(orderedEvent)
+        case Private(_, from, to) => notifySubscriber(to, orderedEvent)
         case StatusUpdate(_, from) => {
           val allFollowers = FollowerRepository.getAllFollowers(from)
-          allFollowers.foreach(existingFollowers => {
-            existingFollowers.foreach(follower => send(follower, orderedEvent))
-          })
+          allFollowers.foreach(follower =>
+            notifySubscriber(follower, orderedEvent))
         }
       }
     }
   }
 
-  @tailrec
-  final def startPublishing()(implicit ex: ExecutionContext): Unit = {
-    val event = incomingEventQueue.take()
-    publish(event)
-    startPublishing()
+  private def hasNext = {
+    eventQueue.nonEmpty && eventQueue.head.sequenceNo <= nextSeq
   }
 
-  private def send(to: Int, event: Event) = {
-    SubscriberRepository.getSubscriber(to).foreach(_.sendMessage(event))
+  private def notifySubscriber(to: Int, event: Event) = {
+    SubscriberRepository.getSubscriber(to).foreach(_.notify(event))
   }
 
-  private def send(event: Event) = {
-    SubscriberRepository.getAllSubscribers.foreach(_.sendMessage(event))
+  private def notifyAll(event: Event) = {
+    SubscriberRepository.getAllSubscribers.foreach(_.notify(event))
   }
 
   def shutdown = {

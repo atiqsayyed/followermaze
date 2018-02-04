@@ -18,12 +18,14 @@ object Boot extends App {
   private val eventPublisher = new EventPublisher()
   val eventSocketServer = new EventSocketServer(9090, eventPublisher)
   eventSocketServer.start
+
   Future(eventPublisher.startPublishing())
 
-  println("Please enter to shutdown the system")
+  println("Please press enter to shutdown the system!")
 
   StdIn.readLine()
   clientSocketServer.shutdown
+  eventPublisher.shutdown
   eventSocketServer.shutdown
   executorService.shutdown()
 }
