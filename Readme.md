@@ -2,7 +2,7 @@
 
 ## Design
 
-The first thing that came to my mind was using Akka Streams.
+The first thing that came to my mind was using Akka Streams with Akka Actors.
 It's easier to think and manage complex asynchronous processing as with **Akka Streams** using the basic building blocks called **Source**, **Flow** and **Sink**.
 The event would flow from Source to Sink via Flow (which would contain your transformation or business logic) working like pipelines where each components could've been reused. It works really well with Akka Actors which gives you ability to handle mutable state and fault tolerance(which is very important when dealing with Network)
 
@@ -40,8 +40,10 @@ The reason why we have two queues is to separate the Event Collection and Event 
 |10000000 | 1000(default)       | 100 (default)       | 100 (default)           | 10:45
 |50000000 | 1000(default)       | 100 (default)       | 100 (default)           |26:57
 |100000000 | 1000(default)       | 100 (default)       | 100 (default)           |50:40
-|100000 | 5000       | 100 (default)       | 100 (default)           | 25:14
-|100000 | 10000       | 100 (default)       | 100 (default)           | 66:42
+|10000000 | 5000       | 100 (default)       | 100 (default)           | 25:14
+|10000000 | 10000       | 100 (default)       | 100 (default)           | 66:42
+|10000000 | 1000(default)       | 100 (default)       | 500           | 05:07
+|10000000 | 1000(default)       | 700 (default)       | 100           | 09:23
 
 
 
