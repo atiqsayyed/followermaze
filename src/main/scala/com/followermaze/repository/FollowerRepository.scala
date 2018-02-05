@@ -6,8 +6,7 @@ import scala.collection.JavaConverters._
 
 object FollowerRepository {
 
-  private val followers =
-    new ConcurrentHashMap[Int, Set[Int]]().asScala
+  private val followers = new ConcurrentHashMap[Int, Set[Int]]().asScala
 
   def addFollower(to: Int, from: Int) = {
     followers.get(to) match {
@@ -15,7 +14,7 @@ object FollowerRepository {
         followers.put(to, value + from)
       }
       case None => {
-        followers.putIfAbsent(to, Set(from))
+        followers.put(to, Set(from))
       }
     }
   }

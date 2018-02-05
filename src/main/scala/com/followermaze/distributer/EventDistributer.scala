@@ -1,37 +1,35 @@
-package com.followermaze.publisher
-
-import java.util.concurrent.LinkedBlockingQueue
+package com.followermaze.distributer
 
 import com.followermaze.entity._
 import com.followermaze.repository.{FollowerRepository, SubscriberRepository}
-
+import com.followermaze.repository.EventQueue
 import scala.annotation.tailrec
 import scala.collection.mutable
 
-class EventPublisher {
-  private var nextSeq: Int = 1
-  private val eventQueue: mutable.PriorityQueue[Event] =
+class EventDistributer {
+  private var nextSequenceToProcess: Int = 1
+  private val orderedEventQueue =
     mutable.PriorityQueue()(Event.orderedBySeq.reverse)
-  private val incomingEventQueue = new LinkedBlockingQueue[Event]()
 
-  def publish(inputMessage: String) = {
+  def enqueueEvent(inputMessage: String) = {
     Event(inputMessage).map(event => {
-      incomingEventQueue.add(event)
+      EventQueue.enqueue(event)
     })
   }
 
   @tailrec
-  final def startPublishing(): Unit = {
-    val event = incomingEventQueue.take()
+  final def startEventDistribution(): Unit = {
+    val event = EventQueue.dequeue()
     distributeEvent(event)
-    startPublishing()
+    startEventDistribution()
   }
 
   private def distributeEvent(event: Event) = {
-    eventQueue += event
+    orderedEventQueue += event
     while (hasNext) {
-      val orderedEvent = eventQueue.dequeue()
-      if (orderedEvent.sequenceNo == nextSeq) nextSeq += 1
+      val orderedEvent = orderedEventQueue.dequeue()
+      if (orderedEvent.sequenceNo == nextSequenceToProcess)
+        nextSequenceToProcess += 1
       orderedEvent match {
         case Follow(_, from, to) => {
           FollowerRepository.addFollower(to, from)
@@ -51,7 +49,7 @@ class EventPublisher {
   }
 
   private def hasNext = {
-    eventQueue.nonEmpty && eventQueue.head.sequenceNo <= nextSeq
+    orderedEventQueue.nonEmpty && orderedEventQueue.head.sequenceNo <= nextSequenceToProcess
   }
 
   private def notifySubscriber(to: Int, event: Event) = {
@@ -63,6 +61,7 @@ class EventPublisher {
   }
 
   def shutdown = {
+    EventQueue.clear()
     SubscriberRepository.getAllSubscribers.foreach(_.shutdown())
   }
 

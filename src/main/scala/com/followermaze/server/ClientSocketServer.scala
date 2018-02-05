@@ -17,7 +17,7 @@ class ClientSocketServer(port: Int)(implicit ex: ExecutionContext)
       val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
       val clientId = in.readLine().toInt
       val subscriber = new Subscriber(clientId, socket.getOutputStream)
-      SubscriberRepository.subscribe(clientId, subscriber)
+      SubscriberRepository.addSubscriber(clientId, subscriber)
     }
   }
 

@@ -1,9 +1,9 @@
 package com.followermaze
 
-import com.followermaze.publisher.EventPublisher
+import com.followermaze.distributer.EventDistributer
 import com.followermaze.server.{ClientSocketServer, EventSocketServer}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.io.StdIn
 
 object Boot extends App {
@@ -15,17 +15,14 @@ object Boot extends App {
   val clientSocketServer = new ClientSocketServer(9099)
   clientSocketServer.start
 
-  private val eventPublisher = new EventPublisher()
-  val eventSocketServer = new EventSocketServer(9090, eventPublisher)
+  private val eventDistributer = new EventDistributer()
+  val eventSocketServer = new EventSocketServer(9090, eventDistributer)
   eventSocketServer.start
-
-  Future(eventPublisher.startPublishing())
 
   println("Please press enter to shutdown the system!")
 
   StdIn.readLine()
   clientSocketServer.shutdown
-  eventPublisher.shutdown
   eventSocketServer.shutdown
   executorService.shutdown()
 }
