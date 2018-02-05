@@ -8,18 +8,17 @@ import scala.io.StdIn
 
 object Boot extends App {
 
-  val executorService = java.util.concurrent.Executors.newCachedThreadPool
-  implicit val executionContext: ExecutionContext =
-    ExecutionContext.fromExecutor(executorService)
-
-  val clientSocketServer = new ClientSocketServer(9099)
-  clientSocketServer.start
-
+  private val executorService = java.util.concurrent.Executors.newCachedThreadPool
+  private implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(executorService)
+  private val clientPort = 9099
+  private val eventsPort = 9090
+  private val clientSocketServer = new ClientSocketServer(clientPort)
   private val eventDistributer = new EventDistributer()
-  val eventSocketServer = new EventSocketServer(9090, eventDistributer)
+  private val eventSocketServer = new EventSocketServer(eventsPort, eventDistributer)
+  clientSocketServer.start
   eventSocketServer.start
 
-  println("Please press enter to shutdown the system!")
+  println("Follower maze started, press enter to stop!")
 
   StdIn.readLine()
   clientSocketServer.shutdown
