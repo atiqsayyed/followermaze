@@ -51,7 +51,7 @@ The reason why we have two queues is to separate the Event Collection and Event 
 
 In order to run the FollowerMaze app, all you have to do is run the **Boot** file in the src folder.
 
-> sbt runMain com.followermaze.Boot
+> sbt "runMain com.followermaze.Boot"
 
 ## Running Tests
 

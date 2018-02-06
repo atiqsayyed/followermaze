@@ -18,7 +18,7 @@ object Boot extends App {
   clientSocketServer.start
   eventSocketServer.start
 
-  println("Follower maze started, press enter to stop!")
+  println("** Follower maze started, press enter to stop! **")
 
   StdIn.readLine()
   clientSocketServer.shutdown
