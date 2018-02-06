@@ -44,7 +44,7 @@ The reason why we have two queues is to separate the Event Collection and Event 
 |10000000 | 10000       | 100 (default)       | 100 (default)           | 66:42
 |10000000 | 1000(default)       | 100 (default)       | 500           | 05:07
 |10000000 | 1000(default)       | 700 (default)       | 100           | 09:23
-
+|10000000 | 1000(default)       | 700 (default)       | 100           | 17:12
 
 
 ## Running
