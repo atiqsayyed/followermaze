@@ -9,6 +9,7 @@ class SubscriberRepositoryTest extends WordSpec with Matchers {
 
   "Subscriber Repository" should {
     "replace existing subscriber if it exists" in {
+      SubscriberRepository.clear()
       val subscriber1 = new Subscriber(1, new ByteArrayOutputStream())
       val subscriber2 = new Subscriber(2, new ByteArrayOutputStream())
       SubscriberRepository.addSubscriber(1, subscriber1)
