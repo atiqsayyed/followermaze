@@ -1,5 +1,9 @@
 # Follower Maze
 
+## Description of problem
+
+For instruction about the details of the problem, please look in instructions folder
+
 ## Design
 
 The first thing that came to my mind was using Akka Streams with Akka Actors.
